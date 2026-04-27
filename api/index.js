@@ -1,22 +1,22 @@
 export const config = { runtime: "edge" };
 
-const TARGET = "https://m.me2me.sbs";
-
 export default async function handler(req) {
   try {
-    const url = new URL(req.url);
-    const path = url.pathname.replace("/api/proxy", "");
+    const raw = req.url.split("url=")[1];
 
-    const targetUrl = TARGET + path + url.search;
+    if (!raw) {
+      return new Response("Missing URL", { status: 400 });
+    }
+
+    const target = decodeURIComponent(raw);
 
     const headers = new Headers(req.headers);
     headers.delete("host");
 
-    const resp = await fetch(targetUrl, {
+    const resp = await fetch(target, {
       method: req.method,
       headers,
       body: req.body,
-      redirect: "manual",
     });
 
     return new Response(resp.body, {
